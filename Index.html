@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+:root {
+  --neon-purple: #b46cff;
+  --neon-blue: #6cd6ff;
+  --neon-pink: #ff4fa3;
+  --neon-yellow: #ffe66c;
+  --neon-green: #6cffb4;
+}
+  body {
+    background: #111;
+    color: #f2f2f2;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+    line-height: 1.5;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.6em;
+    color: #ffffff;
+  }
+
+  #question {
+    box-shadow: 0 0 10px rgba(180, 108, 255, 0.25);
+    border-color: var(--neon-purple);
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+  }
+
+  button {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    background: #222;
+    color: #f2f2f2;
+    border: 1px solid #444;
+    border-radius: 6px;
+    font-size: 1em;
+    cursor: pointer;
+  }
+
+button:hover {
+  background: #333;
+  box-shadow: 0 0 8px var(--neon-purple);
+  border-color: var(--neon-purple);
+}
+
+  #result {
+  margin-top: 20px;
+  font-size: 1.2em;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid var(--neon-blue);
+  box-shadow: 0 0 14px rgba(108,214,255,0.25);
+}
+
+#details {
+  margin-top: 10px;
+  padding: 12px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  border: 1px solid var(--neon-pink);
+  box-shadow: 0 0 14px rgba(255,79,163,0.25);
+}
+
+  #restart, #scores {
+    margin-top: 15px;
+    padding: 10px;
+    background: #444;
+    border: 1px solid #666;
+    border-radius: 6px;
+  }
+
+#restart:hover, #scores:hover {
+  background: #555;
+  border-color: var(--neon-blue);
+  box-shadow: 0 0 10px var(--neon-blue);
+}
+  
+.header-bar {
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  color: var(--neon-purple);
+  font-size: 0.9em;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+#progress {
+  margin: 10px 0 20px;
+  height: 6px;
+  background: #222;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+#progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--neon-purple);
+  transition: width 0.3s ease;
+}
+</style>
+  <meta charset="UTF-8">
+  <title>Syndicate Faction Quiz</title>
+</head>
+<body>
+
+<div class="header-bar">Black Edge Syndicate // Attunement Node</div>
+<h1>Syndicate Faction Sorting Quiz</h1>
+
+<div id="progress">
+  <div id="progress-fill"></div>
+</div>
+
+<div id="question"></div>
+<div id="answers"></div>
+
+<div id="result" style="margin-top:20px; font-weight:bold;"></div>
+<div id="details" style="margin-top:10px;"></div>
+<div id="codex" style="display:none; margin-top:20px;"></div>
+
+<button id="restart" style="margin-top:20px; display:none;">Restart Quiz</button>
+<button id="scores" style="margin-top:10px; display:none;">Show Score Breakdown</button>
+
+<script>
+// ===== Factions =====
+const factions = {
+  marauders: {
+    name: "🔴 The Marauders — Iron Fist of the Void",
+    desc: "You resonate with raw force, decisive action, and the thrill of taking what others guard."
+  },
+  smugglers: {
+    name: "🟣 The Smugglers — Shadow‑Lane Runners",
+    desc: "You move between worlds with ease, surviving by wit, charm, and misdirection."
+  },
+  archivists: {
+    name: "🟢 The Archivists — Keepers of the Hidden Flow",
+    desc: "You see patterns where others see noise, and you understand that information is the purest form of power."
+  },
+  forgers: {
+    name: "🔵 The Forgers — Makers of the Armada",
+    desc: "You build the bones and teeth of the Syndicate: ships, weapons, and fortresses."
+  },
+  technomancers: {
+    name: "🟡 The Technomancers — Codebreakers",
+    desc: "You walk the line between science and sorcery, coaxing meaning from corrupted AI and broken Sentinel code."
+  }
+};
+
+// ===== Questions =====
+const questions = [
+  {
+    text: "When you enter a derelict freighter, what’s your first move?",
+    answers: {
+      marauders: "Draw weapons and sweep for hostiles.",
+      smugglers: "Check for salvageable cargo.",
+      archivists: "Access the ship logs.",
+      forgers: "Inspect structural damage.",
+      technomancers: "Interface with remaining AI."
+    }
+  },
+  {
+    text: "What kind of power feels most natural to you?",
+    answers: {
+      marauders: "Fear.",
+      smugglers: "Influence.",
+      archivists: "Knowledge.",
+      forgers: "Creation.",
+      technomancers: "Corruption."
+    }
+  },
+  {
+    text: "A rival faction offers you a deal. You...",
+    answers: {
+      marauders: "Intimidate them.",
+      smugglers: "Negotiate.",
+      archivists: "Gather intel.",
+      forgers: "Offer tech.",
+      technomancers: "Hack them."
+    }
+  },
+  {
+    text: "What environment feels most like home?",
+    answers: {
+      marauders: "A war‑torn asteroid belt.",
+      smugglers: "A neon‑lit border station.",
+      archivists: "A silent observatory.",
+      forgers: "A scrapyard of ships.",
+      technomancers: "A glitched ruin."
+    }
+  },
+  {
+    text: "What do you trust most?",
+    answers: {
+      marauders: "Strength.",
+      smugglers: "Instinct.",
+      archivists: "Records.",
+      forgers: "Craftsmanship.",
+      technomancers: "Code."
+    }
+  },
+  {
+    text: "What kind of mission excites you?",
+    answers: {
+      marauders: "A high‑risk raid.",
+      smugglers: "A stealth run.",
+      archivists: "A data extraction.",
+      forgers: "Building a prototype.",
+      technomancers: "Recovering corrupted tech."
+    }
+  },
+  {
+    text: "What is your greatest flaw?",
+    answers: {
+      marauders: "Impatience.",
+      smugglers: "Moral flexibility.",
+      archivists: "Obsession.",
+      forgers: "Perfectionism.",
+      technomancers: "Dangerous curiosity."
+    }
+  },
+  {
+    text: "What do you fear most?",
+    answers: {
+      marauders: "Weakness.",
+      smugglers: "Being trapped.",
+      archivists: "Forgetting.",
+      forgers: "Failure.",
+      technomancers: "Losing control."
+    }
+  },
+  {
+    text: "What kind of ally do you prefer?",
+    answers: {
+      marauders: "A fighter.",
+      smugglers: "A talker.",
+      archivists: "A thinker.",
+      forgers: "A builder.",
+      technomancers: "A hacker."
+    }
+  },
+  {
+    text: "What do you leave behind when you die?",
+    answers: {
+      marauders: "A legend of fear.",
+      smugglers: "A trail of secrets.",
+      archivists: "A codex of truths.",
+      forgers: "A fleet of creations.",
+      technomancers: "A living glitch."
+    }
+  }
+];
+
+// ===== State =====
+let index = 0;
+let scores = {
+  marauders: 0,
+  smugglers: 0,
+  archivists: 0,
+  forgers: 0,
+  technomancers: 0
+};
+
+// ===== Elements =====
+const qDiv = document.getElementById("question");
+const aDiv = document.getElementById("answers");
+const rDiv = document.getElementById("result");
+const dDiv = document.getElementById("details");
+const restartBtn = document.getElementById("restart");
+const scoresBtn = document.getElementById("scores");
+
+// ===== Functions =====
+function loadQuestion() {
+  if (index >= questions.length) {
+    showResult();
+    return;
+  }
+
+  const q = questions[index];
+  qDiv.textContent = q.text;
+  aDiv.innerHTML = "";
+
+// Turn answers into an array of [faction, text]
+let answerEntries = Object.entries(q.answers);
+
+// Shuffle the array (Fisher–Yates shuffle)
+for (let i = answerEntries.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  [answerEntries[i], answerEntries[j]] = [answerEntries[j], answerEntries[i]];
+}
+
+// Create buttons in randomized order
+answerEntries.forEach(([faction, text]) => {
+  const btn = document.createElement("button");
+  btn.textContent = text;
+  btn.style.display = "block";
+  btn.style.margin = "6px 0";
+  btn.onclick = () => {
+    scores[faction]++;
+    index++;
+    loadQuestion();
+  };
+  aDiv.appendChild(btn);
+});
+}
+
+function showResult() {
+  qDiv.textContent = "Attunement complete.";
+  aDiv.innerHTML = "";
+
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const winnerKey = sorted[0][0];
+  const winner = factions[winnerKey];
+
+  rDiv.textContent = "Your faction: " + winner.name;
+  dDiv.textContent = winner.desc;
+
+  restartBtn.style.display = "inline-block";
+  scoresBtn.style.display = "inline-block";
+}
+
+function showScores() {
+  alert(JSON.stringify(scores, null, 2));
+}
+
+function restart() {
+  index = 0;
+  scores = { marauders: 0, smugglers: 0, archivists: 0, forgers: 0, technomancers: 0 };
+  rDiv.textContent = "";
+  dDiv.textContent = "";
+  restartBtn.style.display = "none";
+  scoresBtn.style.display = "none";
+  loadQuestion();
+}
+
+// ===== Event Listeners =====
+restartBtn.onclick = restart;
+scoresBtn.onclick = showScores;
+
+// ===== Start =====
+loadQuestion();
+</script>
+
+</body>
+</html>
